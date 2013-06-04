@@ -3,12 +3,18 @@
   "version": "0.0.0",
   "description": "Sync directories to S3",
   "main": "index.js",
+  "bin": {
+    "beam": "./bin/beam"
+  },
   "scripts": {
     "test": "mocha test/test-*.js"
   },
   "repository": {
     "type": "git",
     "url": "git://github.com/jxson/beamer.git"
+  },
+  "bugs": {
+    "url": "http://github.com/jxson/beamer/issues"
   },
   "keywords": [
     "aws",
@@ -18,5 +24,9 @@
   "author": "Jason Campbell <jason@js.la> (http://artifact.sh)",
   "license": "MIT",
   "readmeFilename": "README.md",
-  "gitHead": "ef886319d185b9dda658d8022df3c8967fee1f4d"
+  "gitHead": "ef886319d185b9dda658d8022df3c8967fee1f4d",
+  "dependencies": {},
+  "devDependencies": {
+    "mocha": "~1.10.0"
+  }
 }
