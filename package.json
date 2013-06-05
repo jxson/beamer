@@ -25,7 +25,9 @@
   "license": "MIT",
   "readmeFilename": "README.md",
   "gitHead": "ef886319d185b9dda658d8022df3c8967fee1f4d",
-  "dependencies": {},
+  "dependencies": {
+    "command-router": "0.0.5"
+  },
   "devDependencies": {
     "mocha": "~1.10.0"
   }

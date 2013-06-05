@@ -1,0 +1,31 @@
+#!/usr/bin/env node
+
+require('command-router')
+.on('notfound', help)
+.command(':dirname', function(params, options){
+  console.log('dirname', params.dirname)
+  console.log('options', options)
+
+  // beamer(files, opts)
+  // .on('updload')
+  // .on('')
+})
+.parse(process.argv)
+
+function help(action){
+  var action = action || 'beam'
+    , path = require('path')
+    , fs = require('fs')
+    , file = path.resolve(__dirname, '../doc/' + action + '.md')
+
+  fs.exists(file, function(exists){
+    if (! exists) file = path.resolve(__dirname, '../doc/beam.md')
+
+    console.log() // newline before the doc output
+
+    fs.createReadStream(file, { encoding: 'utf8' })
+    .on('data', console.log)
+    .on('error', function(err){ throw err })
+    .on('end', function(){ process.exit(1) })
+  })
+}

@@ -17,28 +17,36 @@ Object names will be chosen relatively to the `dirname` argument so that if you 
 ## OPTIONS
 
 --bucket, -b [bucket]
+
   The s3 bucket to upload objects to.
 
 --key, -k [key]
+
   The AWS key to use for authentication.
 
 --secret, -s [secret]
+
   The AWS secret to use for authentication.
 
 --region, -r <region>
+
   AWS region/zone to use, defaults to us-west-1
 
 --dirname, --dir, -d <dirname>
+
   The `dirname` to use as the root when uploading single files.
 
 --header, -h <header>
+
   Sets a header for each object's PUT request being sent to s3, it's possible to set more than one and override the for: 'x-amz-acl: public-read' and 'cache-control: max-age=31536000, public'.
 
 --gzip, -g
 --no-gzip, -ng
+
   Turn gzipping on or off, defaults to true (on).
 
 --mime, -m <media-type:extenions>
+
   Define extra media-types. If an unknown media-type is encountered when looking up a files extension it will be set to 'aplication/octet-stream' by default. If this is undesired use `--mime` to add a mapping for example `--mime text/x-markdown:md,markdown`
 
 ## DISCUSSION
