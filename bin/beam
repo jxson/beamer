@@ -2,6 +2,39 @@
 
 require('command-router')
 .on('notfound', help)
+.option({ name: 'bucket'
+, alias: 'b'
+, type: String
+})
+.option({ name: 'key'
+, alias: 'k'
+, type: String
+})
+.option({ name: 'secret'
+, alias: 's'
+, type: String
+})
+.option({ name: 'region'
+, alias: 'r'
+, type: String
+})
+.option({ name: 'dirname'
+, alias: 'd'
+, type: String
+})
+.option({ name: 'header'
+, alias: 'h'
+, type: Array
+})
+.option({ name: 'mime'
+, alias: 'm'
+, type: Array
+})
+.option({ name: 'gzip'
+, alias: 'g'
+, type: Boolean
+, default: true
+})
 .command(':dirname', function(params, options){
   console.log('dirname', params.dirname)
   console.log('options', options)
