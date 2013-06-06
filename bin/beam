@@ -39,9 +39,16 @@ require('command-router')
   console.log('dirname', params.dirname)
   console.log('options', options)
 
-  // beamer(files, opts)
-  // .on('updload')
-  // .on('')
+  var beamer = require('../')
+
+  beamer(params.dirname)
+  .configure(options)
+  .on('error', function(){})
+  .on('start', function(){})
+  .on('updload', function(){})
+  .on('delete', function(){})
+  .on('end', function(){})
+
 })
 .parse(process.argv)
 
