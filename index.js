@@ -1,14 +1,15 @@
 
 module.exports = function(dirname) {
   var EE = require('events').EventEmitter
-    , beam = Object.create(EE.prototype, {
-        configure: { value: configure }
-      , options: { value: {}}
-      , send: { value: send }
-      })
+    , extend = require('util')._extend
+    , proto = extend({ configure: configure
+      , options: {}
+      , upload: upload
+      }, EE.prototype)
+    , beam = Object.create(proto)
 
   process.nextTick(function(){
-    beam.send(dirname)
+    beam.upload(dirname)
   })
 
   return beam
@@ -25,7 +26,7 @@ function configure(opts){
   return beam
 }
 
-function send(dirname){
+function upload(dirname){
   // * validate the config
   //   * required values for key, secret, bucket
   //   * set defaults region, headers, gzip
