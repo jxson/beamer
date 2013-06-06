@@ -47,7 +47,7 @@ Object names will be chosen relatively to the `dirname` argument so that if you 
 
 --mime, -m <media-type:extenions>
 
-  Define extra media-types. If an unknown media-type is encountered when looking up a files extension it will be set to 'aplication/octet-stream' by default. If this is undesired use `--mime` to add a mapping for example `--mime text/x-markdown:md,markdown`
+  Define extra media-types. If an unknown media-type is encountered when looking up a files extension it will be set to 'aplication/octet-stream' by default. If this is undesired use `--mime` to add a mapping. For example `--mime text/x-markdown:md,markdown` will use the content type "text/x-markdown" for md, and markdown extensions.
 
 ## DISCUSSION
 

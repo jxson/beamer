@@ -43,7 +43,15 @@ require('command-router')
 
   beamer(params.dirname)
   .configure(options)
-  .on('error', function(){})
+  .on('error', function(err){
+    console.error()
+    console.error('Can\'t upload :(')
+    console.error()
+    console.error('  ' + err.message)
+    console.error()
+
+    process.exit(1)
+  })
   .on('start', function(){})
   .on('updload', function(){})
   .on('delete', function(){})
