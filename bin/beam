@@ -17,6 +17,7 @@ require('command-router')
 .option({ name: 'region'
 , alias: 'r'
 , type: String
+, default: 'us-west-1'
 })
 .option({ name: 'dirname'
 , alias: 'd'
