@@ -37,54 +37,44 @@ function fire(dirname){
 
   beam.validate()
 
-var path = require('path')
-  , dirname = path.resolve(beam.options.dirname, dirname)
-  , powerwalk = require('powerwalk')
+  var path = require('path')
+    , dirname = path.resolve(beam.options.dirname, dirname)
+    , powerwalk = require('powerwalk')
+    , knox = require('knox')
+    , s3 = knox.createClient({ key: beam.options.key
+      , secret: beam.options.secret
+      , bucket: beam.options.bucket
+      , region: beam.options.region
+      })
+    , local = []
+    , queue = []
+    , stats = { uploaded: 0
+      , deleted: 0
+      }
+
+  beam.emit('start')
 
   powerwalk(dirname)
   .on('error', function(err){ beam.emit('error', err )})
-  .on('stat', send)
-  .on('end', finish)
-
-  //   * set defaults region, headers, gzip
-  // * normalize the dirname/ filename
-  // * statfiles and start keeping track
-  // * start uploading everything
-  // * read a list of objects in the bucket and delete what isn't available
-  // locally
+  .on('stat', function(file){ queue.push(file) })
+  .on('end', function(){
+    queue.forEach(send)
+  })
 
   function send(file){
     var fs = require('graceful-fs')
       , mime = require('mime')
       , url = file.filename.replace(dirname, '')
-
-    if (! beam.s3) {
-      var knox = require('knox')
-
-      beam.s3 = knox.createClient({ key: beam.options.key
-      , secret: beam.options.secret
-      , bucket: beam.options.bucket
-      , region: beam.options.region
-      })
-    }
-
-    console.log('beam.options.bucket', beam.options.bucket)
-
-    // console.log('beam.s3', beam.s3)
-
-    var req = beam.s3.put(url, { 'content-length': file.stats.size
+      , req = s3.put(url, { 'content-length': file.stats.size
         , 'content-type': mime.lookup(file.filename)
         , 'x-amz-acl': 'public-read'
         })
 
-    // artifact.sh.s3.amazonaws.com
+    local.push(url)
 
-    console.log('sending filename', url)
+    req.on('error', function(err){ beam.emit('error', err) })
 
     req.on('response', function(res){
-      console.log('res.statusCode', res.statusCode)
-      console.log('res.headers', res.headers)
-
       var data = ''
 
       res.setEncoding('utf8');
@@ -92,24 +82,48 @@ var path = require('path')
         data += chunk
       })
       .on('end', function(){
-        console.log('data', data)
+        beam.emit('PUT', url)
+        finish()
       })
     })
 
     fs
     .createReadStream(file.filename)
     .pipe(req)
-
   }
 
+  // this needs to wait for all requests to comeback before firing
   function finish(){
+    stats.uploaded++
 
+    if (stats.uploaded !== queue.length) return // wait till next time
+
+    s3.list(function(err, list){
+      if (err) return beam.emit('error', err)
+
+      var remove = list['Contents']
+          .map(function(obj){
+            var key = '/' + obj['Key']
+
+            if (local.indexOf(key) === -1) return key
+          })
+          .filter(function(key){
+            if (key) return key
+          })
+
+      if (remove.length === 0) beam.emit('end', { uploaded: local.length
+      , deleted: 0
+      })
+
+      remove.forEach(function(obj){
+        console.log('delete', obj)
+      })
+    })
   }
 }
 
 function validate(){
   var beam = this
-    , valid = true
     , required = [ 'bucket', 'key', 'secret' ]
     , missing = []
 
@@ -121,7 +135,5 @@ function validate(){
     var message = 'Missing required options: ' + missing.join(', ')
     beam.emit('error', new Error(message))
   }
-
-  // if (! valid) beam.emit('error', new Error(message))
 }
 

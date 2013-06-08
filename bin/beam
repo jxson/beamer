@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 
+var colors = require('colors')
+
 require('command-router')
 .on('notfound', help)
 .option({ name: 'bucket'
@@ -37,13 +39,11 @@ require('command-router')
 , default: true
 })
 .command(':dirname', function(params, options){
-  console.log('dirname', params.dirname)
-  console.log('options', options)
-
   var beamer = require('../')
 
   beamer(params.dirname)
   .configure(options)
+  .on('start', console.log)
   .on('error', function(err){
     console.error()
     console.error('Can\'t upload :(')
@@ -53,10 +53,16 @@ require('command-router')
 
     process.exit(1)
   })
-  .on('start', function(){})
-  .on('updload', function(){})
+  .on('PUT', function(pathname){
+    console.log('    ✓'.green, ('PUT ' + pathname).grey)
+  })
   .on('delete', function(){})
-  .on('end', function(){})
+  .on('end', function(stats){
+    console.log()
+    console.log(('  ' + stats.uploaded + ' objects uploaded').green, '(x ms)'.grey)
+    console.log(('  ' + stats.deleted + ' objects deleted').yellow, '(x ms)'.grey)
+    console.log()
+  })
 
 })
 .parse(process.argv)
