@@ -111,9 +111,7 @@ function fire(dirname){
             if (key) return key
           })
 
-      if (remove.length === 0) beam.emit('end', { uploaded: local.length
-      , deleted: 0
-      })
+      if (remove.length === 0) beam.emit('end', stats)
 
       remove.forEach(function(obj){
         console.log('delete', obj)
