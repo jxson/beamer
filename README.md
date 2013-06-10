@@ -1,6 +1,6 @@
 # beamer - currently WIP: may not work as advertised ;) [![Build Status](https://travis-ci.org/jxson/beamer.png)](https://travis-ci.org/jxson/beamer)
 
-CLI and node.js module for uploading directories and files to S3 bucket.
+CLI and node.js module for uploading directories and files to S3.
 
 # Features
 
