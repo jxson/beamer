@@ -38,30 +38,61 @@ require('command-router')
 , type: Boolean
 , default: true
 })
+.command('config set :key :value', function(params, options){
+  var ini = require('ini')
+    , fs = require('graceful-fs')
+    , config
+
+  // TODO: validate keys
+  fs.readFile('./.beam', 'utf8', function(err, data){
+    if (err && err.code !== 'ENOENT') throw err
+
+    var config = data ? ini.parse(data) : {}
+
+    config[params.key] = params.value
+
+    fs.writeFile('./.beam', ini.stringify(config), function(err){
+      if (err) throw err
+    })
+  })
+})
 .command(':dirname', function(params, options){
   var beamer = require('../')
+    , ini = require('ini')
+    , fs = require('graceful-fs')
 
-  beamer(params.dirname)
-  .configure(options)
-  .on('start', console.log)
-  .on('error', function(err){
-    console.error()
-    console.error('Can\'t upload :(')
-    console.error()
-    console.error('  ' + err.message)
-    console.error()
+  fs.readFile('./.beam', 'utf8', function(err, data){
+    if (err && err.code !== 'ENOENT') throw err
 
-    process.exit(1)
-  })
-  .on('PUT', function(pathname){
-    console.log('    ✓'.green, ('PUT ' + pathname).grey)
-  })
-  .on('delete', function(){})
-  .on('end', function(stats){
-    console.log()
-    console.log(('  ' + stats.uploaded + ' objects uploaded').green, '(x ms)'.grey)
-    console.log(('  ' + stats.deleted + ' objects deleted').yellow, '(x ms)'.grey)
-    console.log()
+    var config = data ? ini.parse(data) : {}
+
+    // merge CLI opts onto the config
+    for (var key in options) {
+      if (options[key]) config[key] = options[key]
+    }
+
+    beamer(params.dirname)
+    .configure(config)
+    .on('start', console.log)
+    .on('error', function(err){
+      console.error()
+      console.error('Can\'t upload :(')
+      console.error()
+      console.error('  ' + err.message)
+      console.error()
+
+      process.exit(1)
+    })
+    .on('PUT', function(pathname){
+      console.log('    ✓'.green, ('PUT ' + pathname).grey)
+    })
+    .on('delete', function(){})
+    .on('end', function(stats){
+      console.log()
+      console.log(('  ' + stats.uploaded + ' objects uploaded').green, '(x ms)'.grey)
+      console.log(('  ' + stats.deleted + ' objects deleted').yellow, '(x ms)'.grey)
+      console.log()
+    })
   })
 
 })
@@ -70,7 +101,7 @@ require('command-router')
 function help(action){
   var action = action || 'beam'
     , path = require('path')
-    , fs = require('fs')
+    , fs = require('graceful-fs')
     , file = path.resolve(__dirname, '../doc/' + action + '.md')
 
   fs.exists(file, function(exists){
