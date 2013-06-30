@@ -1,137 +1,78 @@
 
-module.exports = function(dirname, options) {
-  var EE = require('events').EventEmitter
-    , extend = require('util')._extend
-    , proto = extend({ configure: configure
-      , validate: validate
-      , options: { region: 'us-west-1'
-        , dirname: process.cwd()
-        , gzip: true
-        }
-      , fire: fire
-      }, EE.prototype)
-    , beam = Object.create(proto)
+var powerwalk = require('powerwalk')
+  , through = require('through')
+  , path = require('path')
 
-  if (options) beam.configure(options)
+module.exports = function(dir, opts){
+  console.log('dir', dir)
 
-  process.nextTick(function(){
-    beam.fire(dirname)
-  })
+  var dirname = path.resolve(process.cwd(), dir)
+    , stats = {}
+    , uploader = through(write, end)
+    , queue = new Queue
 
-  return beam
-}
+  console.log('dirname', dirname)
 
-function configure(opts){
-  var beam = this
-    , ignore = [ 'argv', 'cooked', 'original' ]
+  // stream filenames to the uploader
+  powerwalk(dirname)
+  .pipe(uploader)
 
-  for (key in opts) {
-    if (ignore.indexOf(key) === -1) beam.options[key] = opts[key]
+  return uploader
+
+  // piping powerwalk's filenames
+  function write(filename){
+    queue.push(filename)
   }
 
-  return beam
+  function end(){
+
+    // this.emit('end', stats)
+  }
 }
 
-function fire(dirname){
-  var beam = this
+function Queue(){
+  this.items = []
+  this.results = []
+  this.running = 0
+  this.limit = 5
+}
 
-  beam.validate()
+Queue.prototype.push = function(filename){
+  this.items.push(filename)
+  this.run()
+}
 
-  var path = require('path')
-    , dirname = path.resolve(beam.options.dirname, dirname)
-    , powerwalk = require('powerwalk')
-    , knox = require('knox')
-    , s3 = knox.createClient({ key: beam.options.key
-      , secret: beam.options.secret
-      , bucket: beam.options.bucket
-      , region: beam.options.region
-      })
-    , local = []
-    , queue = []
-    , stats = { uploaded: 0
-      , deleted: 0
+Queue.prototype.upload = function(filename, callback){
+  console.log('uploading', filename)
+  setTimeout(function(){ callback('finished ' + filename) }, 1000)
+}
+
+Queue.prototype.end = function(){
+  console.log('done uploading everything')
+  console.log(this.results)
+}
+
+Queue.prototype.run = function(){
+  var queue = this
+
+  while(queue.running < queue.limit && queue.items.length > 0) {
+    // grabs the top item
+    var item = queue.items.shift()
+
+    queue.upload(item, function(result) {
+      queue.results.push(result)
+
+      queue.running--
+
+      // upload another one if there are any pending
+      if(queue.items.length > 0) {
+        queue.run()
+      } else if(queue.running == 0) {
+        queue.end()
       }
 
-  beam.emit('start')
-
-  powerwalk(dirname)
-  .on('error', function(err){ beam.emit('error', err )})
-  .on('stat', function(file){ queue.push(file) })
-  .on('end', function(){
-    queue.forEach(send)
-  })
-
-  function send(file){
-    var fs = require('graceful-fs')
-      , mime = require('mime')
-      , url = file.filename.replace(dirname, '')
-      , req = s3.put(url, { 'content-length': file.stats.size
-        , 'content-type': mime.lookup(file.filename)
-        , 'x-amz-acl': 'public-read'
-        })
-
-    local.push(url)
-
-    req.on('error', function(err){ beam.emit('error', err) })
-
-    req.on('response', function(res){
-      var data = ''
-
-      res.setEncoding('utf8');
-      res.on('data', function(chunk){
-        data += chunk
-      })
-      .on('end', function(){
-        beam.emit('PUT', url)
-        finish()
-      })
     })
 
-    fs
-    .createReadStream(file.filename)
-    .pipe(req)
-  }
-
-  // this needs to wait for all requests to comeback before firing
-  function finish(){
-    stats.uploaded++
-
-    if (stats.uploaded !== queue.length) return // wait till next time
-
-    s3.list(function(err, list){
-      if (err) return beam.emit('error', err)
-
-      var remove = list['Contents']
-          .map(function(obj){
-            var key = '/' + obj['Key']
-
-            if (local.indexOf(key) === -1) return key
-          })
-          .filter(function(key){
-            if (key) return key
-          })
-
-      if (remove.length === 0) beam.emit('end', stats)
-
-      remove.forEach(function(obj){
-        console.log('delete', obj)
-      })
-    })
+    queue.running++
   }
 }
-
-function validate(){
-  var beam = this
-    , required = [ 'bucket', 'key', 'secret' ]
-    , missing = []
-
-  required.forEach(function(key){
-    if (! beam.options[key]) missing.push(key)
-  })
-
-  if (missing.length > 0) {
-    var message = 'Missing required options: ' + missing.join(', ')
-    beam.emit('error', new Error(message))
-  }
-}
-
