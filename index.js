@@ -48,36 +48,33 @@ function beamer(dir){
   }
 
   function put(filename, callback){
-    // var fs = require('graceful-fs')
-    //   , mime = require('mime')
-    //   , url = filename.replace(dirname, '')
+    var fs = require('graceful-fs')
+      , mime = require('mime')
+      , url = filename.replace(dirname, '')
 
-    // if (! s3) {
-    //   s3 = knox.createClient({ key: options.key
-    //   , secret: options.secret
-    //   , bucket: options.bucket
-    //   , region: options.region
-    //   })
-    // }
+    // TODO: validate config
 
-    // fs.stat(filename, function(err, stats){
-    //   if (err) return callback(err)
+    if (! s3) { // lazily define
+      s3 = knox.createClient({ key: options.key
+      , secret: options.secret
+      , bucket: options.bucket
+      , region: options.region
+      })
+    }
 
-    //   console.log('sending', url)
+    fs.stat(filename, function(err, stats){
+      if (err) return beam.emit('error', err)
 
-    //   var headers = { 'content-type': mime.lookup(filename)
-    //       , 'content-length': stats.size
-    //       , 'x-amz-acl': 'public-read'
-    //       }
-    //     , req = s3.put(url, headers)
+      var headers = { 'content-type': mime.lookup(filename)
+          , 'content-length': stats.size
+          , 'x-amz-acl': 'public-read'
+          }
+        , req = s3.put(url, headers)
 
-    //   fs.createReadStream(filename).pipe(req)
+      fs.createReadStream(filename).pipe(req)
 
-    //   callback(null, req)
-    // })
-
-    setTimeout(callback, 1000)
-
+      callback(req)
+    })
   }
 
   function fire(){
@@ -85,119 +82,29 @@ function beamer(dir){
       // start at the top
       var filename = pending.shift()
 
-      console.log('uploading =>', filename)
+      beam.put(filename, function(req){
+        req.on('response', function(res){ beam.emit('response', res )})
+        req.on('response', function(res){
+          var concat = require('concat-stream')
 
-      beam
-      .put(filename, function(){
-        console.log('finished =>',filename)
+          res.pipe(concat(function(data){
+            // if (! data) return
+            // console.log(req.url, data.toString())
+          }))
 
-        current--
+          res.on('end', function(){
+            current--
 
-        // pipe the finished req
-        beam.queue(filename)
+            // pipe the finished req
+            beam.queue(req.url)
 
-        // upload another one if there are any pending
-        if(pending.length > 0) beam.fire()
+            // upload another one if there are any pending
+            if(pending.length > 0) beam.fire()
+          })
+        })
       })
-      // .on('response', function(res){
-      //   var req = this
-      // })
-
-      // request(function(err, res){
-      //   if (err) return beam.emit('error', err)
-
-      //   var req = this
-      //     , concat = require('concat-stream')
-
-      //   // check res code
-      //   // console.log('res', res)
-      //   // httpVersion: '1.1',
-      //   // complete: false,
-      //   // headers:
-      //   //  { 'x-amz-request-id': '36A61983D4DD9BD7',
-      //   //    'x-amz-id-2': 'MLI4Di/Ve7y6ORKvYpMMw3DJYbUzzKHCA6e1VsiMVurO7kTfYbE1e0pvkb1G3TJZ',
-      //   //    'content-type': 'application/xml',
-      //   //    'transfer-encoding': 'chunked',
-      //   //    date: 'Mon, 08 Jul 2013 22:50:01 GMT',
-      //   //    connection: 'close',
-      //   //    server: 'AmazonS3' },
-      //   // trailers: {},
-      //   // readable: true,
-      //   // _paused: false,
-      //   // _pendings: [],
-      //   // _endEmitted: false,
-      //   // url: '',
-      //   // method: null,
-      //   // statusCode: 403,
-
-      //   // might have error info
-      //   res.pipe(concat(function(data){
-      //     console.log('req.url', data.toString())
-      //   }))
-
-
-
-      //   res.on('end', function(){
-      //     console.log('req.end', req.url)
-      //     current--
-
-      //     // pipe the finished req
-      //     beam.queue(req.url)
-
-      //     // upload another one if there are any pending
-      //     if(requests.length > 0) beam.fire()
-      //   })
-      // })
 
       current++
     }
   }
 }
-
-
-// function Queue(){
-//   this.items = []
-//   this.results = []
-//   this.running = 0
-//   this.limit = 5
-// }
-
-// Queue.prototype.push = function(filename){
-//   this.items.push(filename)
-//   this.run()
-// }
-
-// Queue.prototype.upload = function(filename, callback){
-//   console.log('uploading', filename)
-//   setTimeout(function(){ callback('finished ' + filename) }, 1000)
-// }
-
-// Queue.prototype.end = function(){
-//   console.log('done uploading everything')
-//   console.log(this.results)
-// }
-
-// Queue.prototype.run = function(){
-//   var queue = this
-
-//   while(queue.running < queue.limit && queue.items.length > 0) {
-//     // grabs the top item
-//     var item = queue.items.shift()
-
-//     queue.upload(item, function(result) {
-//       queue.results.push(result)
-
-//       queue.running--
-
-//       // upload another one if there are any pending
-//       if(queue.items.length > 0) {
-//         queue.run()
-//       } else if(queue.running == 0) {
-//         queue.end()
-//       }
-
-//     })
-
-//     queue.running++
-//   }
-// }
