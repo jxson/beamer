@@ -85,13 +85,38 @@ function beamer(dir){
       beam.put(filename, function(req){
         req.on('response', function(res){
           if (! res.req) res.req = req
-          beam.emit('response', res)
 
           var concat = require('concat-stream')
 
           res.pipe(concat(function(data){
-            // if (! data) return
-            // console.log(req.url, data.toString())
+            if (! data) return beam.emit('response', res)
+            // if there is no error carry on...
+            if (res.statusCode < 400) return
+
+
+            var ps = require('xml2js').parseString
+              , options = { explicitArray: false
+                , explicitRoot: false
+                }
+
+            ps(data, options, function(err, xml){
+              if (err) return callback(err)
+
+              var message = [ res.statusCode
+                  , xml['Code']
+                  , '\n '
+                  , req.method
+                  , req.url
+                  , '\n '
+                  , xml['Message']
+                  ].join(' ')
+
+              res.body = xml
+
+              beam.emit('error', new Error(message))
+              beam.emit('response', res)
+            })
+
           }))
 
           res.on('end', function(){
