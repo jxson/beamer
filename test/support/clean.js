@@ -1,6 +1,6 @@
 
 var knox = require('knox')
-  , config = require('./config.json')
+  , config = require('./config')
   , concat = require('concat-stream')
 
 module.exports = clean
@@ -33,7 +33,6 @@ function clean(bucket, callback){
         ps(data, options, function(err, xml){
           if (err) return callback(err)
 
-          console.log('xml', xml)
           var message = 'AWS Responded '
               + res.statusCode
               + ': '
