@@ -83,8 +83,10 @@ function beamer(dir){
       var filename = pending.shift()
 
       beam.put(filename, function(req){
-        req.on('response', function(res){ beam.emit('response', res )})
         req.on('response', function(res){
+          if (! res.req) res.req = req
+          beam.emit('response', res)
+
           var concat = require('concat-stream')
 
           res.pipe(concat(function(data){
