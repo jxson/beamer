@@ -71,26 +71,26 @@ require('command-router')
       if (options[key]) config[key] = options[key]
     }
 
+    console.log() // add a newline
+
     beamer(params.dirname)
     .configure(config)
-    .on('start', console.log)
     .on('error', function(err){
       console.error()
-      console.error('Can\'t upload :(')
+      console.error('Can\'t upload :('.red)
       console.error()
       console.error('  ' + err.message)
       console.error()
 
       process.exit(1)
     })
-    .on('PUT', function(pathname){
-      console.log('    ✓'.green, ('PUT ' + pathname).grey)
+    .on('response', function(res){
+      console.log('    ✓'.green
+      , res.req.method
+      , res.statusCode
+      , res.req.url.grey)
     })
-    .on('delete', function(){})
-    .on('end', function(stats){
-      console.log()
-      console.log(('  ' + stats.uploaded + ' objects uploaded').green, '(x ms)'.grey)
-      console.log(('  ' + stats.deleted + ' objects deleted').yellow, '(x ms)'.grey)
+    .on('end', function(){
       console.log()
     })
   })
