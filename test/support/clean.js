@@ -12,7 +12,7 @@ function clean(bucket, callback){
       })
 
   client.list(function(err, data){
-    if (err) return callback(err)
+    if (err) return callback(err, data)
 
     var zap = data['Contents']
         .map(function(o){ return o['Key'] }) // only get the keys
