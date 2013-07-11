@@ -1,10 +1,10 @@
-# beamer - currently WIP: may not work as advertised ;) [![Build Status](https://travis-ci.org/jxson/beamer.png)](https://travis-ci.org/jxson/beamer)
+# beamer - currently a WIP: may not work as advertised ;) [![Build Status](https://travis-ci.org/jxson/beamer.png)](https://travis-ci.org/jxson/beamer)
 
-CLI and node.js module for uploading directories and files to S3.
+CLI and node.js module for syncing local directories to S3.
 
 # Features
 
-* upload entire directories
+* sync local directory
 
 # TODO:
 
@@ -19,6 +19,23 @@ CLI and node.js module for uploading directories and files to S3.
 # Example
 
 # API
+
+upload everything in a local directory
+
+    var beamer = require('beamer')
+
+    beamer(dirname)
+    .configure({ bucket: <your bucket>
+    , key: <your AWS key>
+    , secret: <your AWS secret>
+    })
+    .on('error', function(err){ throw err })
+    .on('response', function(res){
+      console.log(res.req.method, res.statusCode, res.req.url)
+    })
+    .on('end', function(){
+      console.log('all done!')
+    })
 
 # CLI
 
