@@ -1,6 +1,6 @@
 {
   "name": "beamer",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Sync directories to S3",
   "main": "./lib/index.js",
   "bin": {
