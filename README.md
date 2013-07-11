@@ -1,4 +1,4 @@
-# beamer - currently a WIP: may not work as advertised ;) [![Build Status](https://travis-ci.org/jxson/beamer.png)](https://travis-ci.org/jxson/beamer)
+# beamer - currently a WIP: may not work as advertised ;) [![Build Status](https://travis-ci.org/jxson/beamer.png)](https://travis-ci.org/jxson/beamer) [![Dependency Status](https://david-dm.org/jxson/beamer.png)](https://david-dm.org/jxson/beamer)
 
 CLI and node.js module for syncing local directories to S3.
 
