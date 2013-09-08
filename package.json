@@ -26,7 +26,6 @@
   "readmeFilename": "README.md",
   "gitHead": "ef886319d185b9dda658d8022df3c8967fee1f4d",
   "dependencies": {
-    "command-router": "0.0.5",
     "mime": "~1.2.9",
     "knox": "~0.8.2",
     "colors": "~0.6.0-1",
@@ -35,7 +34,8 @@
     "concat-stream": "~1.0.0",
     "xml2js": "~0.2.8",
     "through": "~2.3.4",
-    "graceful-fs": "~2.0.0"
+    "graceful-fs": "~2.0.0",
+    "command-router": "0.0.6"
   },
   "devDependencies": {
     "mocha": "~1.12.0",
