@@ -2,8 +2,14 @@
 
 var colors = require('colors')
 
+var config = require('../lib/config')
+
 require('command-router')
 .on('notfound', help)
+.option({ name: 'help'
+, alias: 'h'
+, type: Boolean
+})
 .option({ name: 'bucket'
 , alias: 'b'
 , type: String
@@ -26,7 +32,7 @@ require('command-router')
 , type: String
 })
 .option({ name: 'header'
-, alias: 'h'
+, alias: 'H'
 , type: Array
 })
 .option({ name: 'mime'
@@ -39,17 +45,20 @@ require('command-router')
 , default: true
 })
 .command('config set :key :value', function(params, options){
-  var ini = require('ini')
-    , fs = require('graceful-fs')
-    , config
+  config.set(params.key, params.value, function(err, data){
+    if (err) throw err
+    console.log('config saved to .beam')
+  })
+})
+.command('config get ?:key?', function(params, options){
+  config.get(params.key, function(err, data){
+    if (err) throw err
+    console.log(data)
+  })
+})
 
-  // TODO: validate keys
-  fs.readFile('./.beam', 'utf8', function(err, data){
-    if (err && err.code !== 'ENOENT') throw err
 
-    var config = data ? ini.parse(data) : {}
 
-    config[params.key] = params.value
 
     fs.writeFile('./.beam', ini.stringify(config), function(err){
       if (err) throw err
