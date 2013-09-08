@@ -56,16 +56,7 @@ require('command-router')
     console.log(data)
   })
 })
-
-
-
-
-    fs.writeFile('./.beam', ini.stringify(config), function(err){
-      if (err) throw err
-    })
-  })
-})
-.command(':dirname', function(params, options){
+.command(':dirname(([^\s]+))', function(params, options){
   var beamer = require('../')
     , ini = require('ini')
     , fs = require('graceful-fs')
