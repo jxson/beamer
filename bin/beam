@@ -44,6 +44,14 @@ require('command-router')
 , type: Boolean
 , default: true
 })
+.option({ name: 'watch'
+, alias: 'w'
+, type: Boolean
+})
+.option({ name: 'clean'
+, alias: 'c'
+, type: Boolean
+})
 .command('config set :key :value', function(params, options){
   config.set(params.key, params.value, function(err, data){
     if (err) throw err
@@ -56,25 +64,52 @@ require('command-router')
     console.log(data)
   })
 })
-.command(':dirname(([^\s]+))', function(params, options){
-  var beamer = require('../')
-    , ini = require('ini')
+.command('*', function(params, options){
+  if (options.help) help()
+
+  var dirname = params.splats[0] || process.cwd()
+    , beamer = require('../lib')
+    , watcher = require('../lib/watcher')
     , fs = require('graceful-fs')
 
-  fs.readFile('./.beam', 'utf8', function(err, data){
-    if (err && err.code !== 'ENOENT') throw err
+  console.log(dirname)
 
-    var config = data ? ini.parse(data) : {}
-
+  config.get(function(err, data){
     // merge CLI opts onto the config
-    for (var key in options) {
-      if (options[key]) config[key] = options[key]
-    }
+    for (var key in options) if (options[key]) data[key] = options[key]
 
     console.log() // add a newline
 
-    beamer(params.dirname)
-    .configure(config)
+    if (options.watch) {
+      return watcher(dirname)
+      .configure(data)
+      .on('error', function(err){
+        console.error()
+        console.error('Can\'t upload :('.red)
+        console.error()
+        console.error('  ' + err.message)
+        console.error()
+
+        process.exit(1)
+      })
+      .on('response', function(res){
+        console.log('    ✓'.green
+        , res.req.method
+        , res.statusCode
+        , res.req.url.grey)
+
+        if (options.clean) fs.unlink(res.req.filename, function(err){
+          if (err) throw err
+
+          console.log('    ✘'.red
+          , 'removed file:'
+          , res.req.filename.grey)
+        })
+      })
+    }
+
+    beamer(dirname)
+    .configure(data)
     .on('error', function(err){
       console.error()
       console.error('Can\'t upload :('.red)
@@ -93,8 +128,8 @@ require('command-router')
     .on('end', function(){
       console.log()
     })
-  })
 
+  })
 })
 .parse(process.argv)
 
