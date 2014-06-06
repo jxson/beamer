@@ -3,7 +3,6 @@ node_js:
 - 0.8
 - 0.1
 env:
-  secure: |-
-    n6MVzPT0ffW45GUx+CnN8NGR8GVu9lDjPfDqQ6kt5mftYwFlSxWuTvUbSYxQ
-    pRmO5in/9CF1VDBfH0iLjj25W1D3gIxQS0pnuCkGI8JfbSbaar+Fmr/g+sFW
-    GWc63F1PiE1ne8A2rOL6JpRhROfMzI5hyFDsDGZmNAjCsdD9bRw=
+  secure:
+    - N9Sdvbx2tGm5JppXAhF7PXS2AHqeNzpZ6zf+7MGO+MjuZoYs2tMAdt/aAHzpjrEO0nB8zUf11FMlvQQrNw4vpAIZ0Sa5GOfaewV88JIo6H3GM5LJ0IiI753vwO/+oH57AHa7yF+Ypf4aqONsPmeAWwGI1DTzxQtzaeuzPMACPl4=
+    - BkRf427xcQbQi/IiDGMnIxeq7l+jKVAg6CWhyRFljd9FaWx8mtzYPib1LBV2CytuJYOqHIg5VvmMtJ5ULPLbEdHYA8sIsk/FhDfIjElhSiEplvKEcQREvukvBpCtPh+plp3/IE3C/woHuCVIC95+svspuGhfeiTfudGb4Mwb8sw=
