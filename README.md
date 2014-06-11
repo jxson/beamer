@@ -39,6 +39,10 @@ upload everything in a local directory
 
 # CLI
 
+# Not An Official Google Project
+
+This project is not an official Google project. It is not supported by Google and Google specifically disclaims all warranties as to its quality, merchantability, or fitness for a particular purpose.
+
 # LICENSE (MIT)
 
 Copyright (c) Jason Campbell ("Author")
